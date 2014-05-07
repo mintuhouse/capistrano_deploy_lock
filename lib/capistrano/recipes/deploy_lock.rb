@@ -133,7 +133,7 @@ Capistrano::Configuration.instance(:must_exist).load do
       next unless self[:deploy_lock]
 
       if deploy_lock[:expire_at] && deploy_lock[:expire_at] < Time.now
-        logger.info Capistrano::DeployLock.expired_message(application, stage, deploy_lock)
+        logger.info Capistrano::DeployLock.expired_message(application, (respond_to?(:stage) ? stage : nil), deploy_lock)
         remove_deploy_lock
         next
       end
