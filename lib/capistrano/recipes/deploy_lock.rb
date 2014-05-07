@@ -21,18 +21,15 @@ Capistrano::Configuration.instance(:must_exist).load do
       if self[:deploy_lock].nil?
         # Check all matching servers for a deploy lock.
         parallel do |session|
-          find_servers_for_task(current_task).each do |current_server|
-            session.else "[ -e #{deploy_lockfile} ] && cat #{deploy_lockfile} || true" do |ch, stream, output|
+          session.when "find_servers_for_task(current_task).include? server", "[ -e #{deploy_lockfile} ] && cat #{deploy_lockfile} || true" do |ch, stream, output|
               if output && output != ""
-                logger.info "Deploy lock found on: #{current_server.host}"
+                logger.info "Deploy lock found on: #{ch.connection.host}"
                 set :deploy_lock, YAML.load(output)
-                return
+              else
+                set :deploy_lock, false
               end
             end
-          end
         end
-
-        set :deploy_lock, false
       end
     end
 
